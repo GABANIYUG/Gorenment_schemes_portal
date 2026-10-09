@@ -1,0 +1,233 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Welfare Portal</title>
+    <meta name="description" content="View and manage your citizen profile on the Government Welfare Portal.">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="../assets/css/style.css" rel="stylesheet">
+    <style>
+        .avatar-circle {
+            width: 100px; height: 100px; font-size: 2.5rem; border-radius: 50%;
+            background: linear-gradient(135deg, #1a3a6b, #2563eb);
+            color: white; display: inline-flex; align-items: center; justify-content: center;
+        }
+        .profile-stat { text-align: center; padding: 1rem; }
+        .profile-stat .stat-value { font-size: 1.4rem; font-weight: 700; color: #1a3a6b; }
+        .profile-stat .stat-label { font-size: .8rem; color: #6b7280; text-transform: uppercase; letter-spacing: 1px; }
+        .info-row { display: flex; padding: .75rem 0; border-bottom: 1px solid #f3f4f6; gap: 1rem; }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { min-width: 160px; color: #6b7280; font-size: .875rem; font-weight: 500; }
+        .info-value { font-weight: 500; color: #1f2937; }
+        .info-value.empty { color: #9ca3af; font-style: italic; font-weight: 400; }
+        .badge-role { background: linear-gradient(135deg,#16a34a,#15803d); font-size: .75rem; }
+        .welcome-banner {
+            background: linear-gradient(135deg, #1a3a6b, #2563eb);
+            border-radius: 12px; color: white; padding: 1.5rem;
+        }
+        .profile-complete-bar { height: 8px; border-radius: 4px; background: #e5e7eb; }
+        .profile-complete-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, #16a34a, #4ade80); transition: width .5s; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top shadow-sm" id="mainNavbar">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="../index.html"><i class="bi bi-bank me-2"></i>Welfare Portal</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item"><a class="nav-link" href="../index.html">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="../schemes.html">Schemes</a></li>
+                <li class="nav-item"><a class="nav-link" href="../contact.html">Contact</a></li>
+            </ul>
+            <ul class="navbar-nav" id="authNav"></ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container my-5" id="profileContent">
+    <div class="text-center py-5"><div class="spinner-border text-primary" role="status"></div></div>
+</div>
+
+<footer class="bg-dark text-light py-4 mt-auto">
+    <div class="container text-center">
+        <p class="mb-0 text-muted">&copy; <span id="year"></span> Government Welfare Portal.</p>
+    </div>
+</footer>
+
+<!-- Deactivate Confirmation Modal -->
+<div class="modal fade" id="deactivateModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="bi bi-exclamation-triangle me-2"></i>Deactivate Account</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body py-4">
+                <p class="mb-1">Are you sure you want to deactivate your account?</p>
+                <p class="text-danger small mb-0"><i class="bi bi-info-circle me-1"></i>You will be logged out immediately and cannot log in again until an admin reactivates your account.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button class="btn btn-danger" id="confirmDeactivate"><i class="bi bi-trash me-2"></i>Yes, Deactivate</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../assets/js/app.js"></script>
+<script>
+document.getElementById('year').textContent = new Date().getFullYear();
+
+const params = new URLSearchParams(window.location.search);
+const isWelcome = params.get('welcome') === '1';
+const isUpdated = params.get('updated') === '1';
+
+// Require login
+checkAuth(function(user) {
+    if (!user) { window.location.href = '../login.html'; return; }
+    if (user.role === 'admin') { window.location.href = '../admin/dashboard.html'; return; }
+    renderNavbar(user);
+    loadProfile();
+});
+
+function calcCompletion(p) {
+    const fields = [p.name, p.email, p.phone, p.dob, p.gender, p.state, p.district, p.category, p.occupation, p.annual_income, p.education];
+    const filled = fields.filter(f => f && String(f).trim() !== '').length;
+    return Math.round((filled / fields.length) * 100);
+}
+
+function row(label, value, icon) {
+    const display = value && String(value).trim() !== ''
+        ? `<span class="info-value">${escHtml(String(value))}</span>`
+        : `<span class="info-value empty">Not provided</span>`;
+    return `<div class="info-row">
+        <span class="info-label"><i class="bi bi-${icon} me-2 text-primary opacity-75"></i>${label}</span>
+        ${display}
+    </div>`;
+}
+
+function loadProfile() {
+    fetch('../api.php?action=profile_get')
+        .then(r => r.json())
+        .then(data => {
+            if (!data.success) { window.location.href = '../login.html'; return; }
+            const p = data.profile;
+            const initial = (p.name || '?').charAt(0).toUpperCase();
+            const pct = calcCompletion(p);
+
+            const dobDisplay = p.dob ? new Date(p.dob).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) : null;
+            const incomeDisplay = p.annual_income ? '₹' + Number(p.annual_income).toLocaleString('en-IN') : null;
+            const stateDisplay = [p.state, p.district].filter(Boolean).join(' / ') || null;
+
+            let topBanner = '';
+            if (isWelcome) {
+                topBanner = `<div class="welcome-banner mb-4">
+                    <div class="d-flex align-items-center gap-3">
+                        <i class="bi bi-check-circle-fill fs-2"></i>
+                        <div>
+                            <h5 class="mb-1 fw-bold">Welcome to Welfare Portal, ${escHtml(p.name)}! 🎉</h5>
+                            <p class="mb-0 opacity-85">Your account has been created successfully. Complete your profile below to get better scheme recommendations.</p>
+                        </div>
+                    </div>
+                </div>`;
+            } else if (isUpdated) {
+                topBanner = `<div class="alert alert-success alert-dismissible fade show d-flex align-items-center gap-2 mb-4" role="alert">
+                    <i class="bi bi-check-circle-fill fs-5"></i>
+                    <div><strong>Profile updated!</strong> Your changes have been saved successfully.</div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>`;
+            }
+
+            document.getElementById('profileContent').innerHTML = `
+                ${topBanner}
+                <div class="row g-4">
+                    <!-- Left: Avatar Card -->
+                    <div class="col-md-4">
+                        <div class="card shadow-sm border-0 h-100">
+                            <div class="card-body text-center p-4">
+                                <div class="avatar-circle mb-3 mx-auto">${initial}</div>
+                                <h5 class="fw-bold mb-1">${escHtml(p.name)}</h5>
+                                <p class="text-muted small mb-2">${escHtml(p.email)}</p>
+                                <span class="badge badge-role text-white px-3 py-1">
+                                    <i class="bi bi-person-check me-1"></i>Citizen
+                                </span>
+
+                                <div class="mt-4 pt-3 border-top text-start">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <small class="text-muted fw-semibold">Profile Completion</small>
+                                        <small class="fw-bold text-primary">${pct}%</small>
+                                    </div>
+                                    <div class="profile-complete-bar mb-3">
+                                        <div class="profile-complete-fill" style="width:${pct}%"></div>
+                                    </div>
+                                    ${pct < 100 ? `<p class="text-muted small mb-3"><i class="bi bi-info-circle me-1"></i>Complete your profile for better scheme recommendations.</p>` : ''}
+                                </div>
+
+                                <div class="d-grid gap-2 mt-2">
+                                    <a href="edit-profile.html" class="btn btn-primary">
+                                        <i class="bi bi-pencil-square me-2"></i>Edit Profile
+                                    </a>
+                                    <a href="../schemes.html" class="btn btn-outline-primary">
+                                        <i class="bi bi-search me-2"></i>Browse Schemes
+                                    </a>
+                                    <button class="btn btn-outline-danger" id="deactivateBtn">
+                                        <i class="bi bi-person-x me-2"></i>Deactivate Account
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Profile Details -->
+                    <div class="col-md-8">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-header bg-white border-bottom px-4 py-3">
+                                <h5 class="mb-0 fw-bold text-primary"><i class="bi bi-person-lines-fill me-2"></i>Profile Information</h5>
+                            </div>
+                            <div class="card-body px-4 py-3">
+                                <p class="section-title mb-3" style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#9ca3af;">Account</p>
+                                ${row('Full Name', p.name, 'person')}
+                                ${row('Email Address', p.email, 'envelope')}
+                                ${row('Phone Number', p.phone, 'phone')}
+
+                                <p class="section-title mt-4 mb-3" style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#9ca3af;">Personal</p>
+                                ${row('Date of Birth', dobDisplay, 'calendar-date')}
+                                ${row('Gender', p.gender, 'gender-ambiguous')}
+                                ${row('Category / Caste', p.category, 'tag')}
+                                ${row('State / District', stateDisplay, 'geo-alt')}
+
+                                <p class="section-title mt-4 mb-3" style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#9ca3af;">Socio-Economic</p>
+                                ${row('Occupation', p.occupation, 'briefcase')}
+                                ${row('Annual Income', incomeDisplay, 'currency-rupee')}
+                                ${row('Education', p.education, 'mortarboard')}
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+
+            document.getElementById('deactivateBtn').addEventListener('click', function() {
+                new bootstrap.Modal(document.getElementById('deactivateModal')).show();
+            });
+        })
+        .catch(() => { window.location.href = '../login.html'; });
+}
+
+document.getElementById('confirmDeactivate').addEventListener('click', function() {
+    this.disabled = true;
+    this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Deactivating...';
+    fetch('../api.php?action=profile_deactivate', { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) window.location.href = '../index.html';
+        });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,124 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Schemes - Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="../assets/css/style.css" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top shadow-sm">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="../index.html"><i class="bi bi-bank me-2"></i>Welfare Portal <span class="badge bg-warning text-dark ms-2 small">ADMIN</span></a>
+        <ul class="navbar-nav ms-auto" id="authNav"></ul>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-3 col-lg-2 admin-sidebar px-0">
+            <h6 class="px-3 pt-3 text-uppercase text-muted fw-bold mb-2 small">Admin Menu</h6>
+            <nav class="nav flex-column">
+                <a class="nav-link" href="dashboard.html"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a>
+                <a class="nav-link active" href="schemes.html"><i class="bi bi-card-list me-2"></i>Manage Schemes</a>
+                <a class="nav-link" href="add-scheme.html"><i class="bi bi-plus-circle me-2"></i>Add Scheme</a>
+                <a class="nav-link" href="users.html"><i class="bi bi-people me-2"></i>Manage Users</a>
+                <a class="nav-link" href="messages.html"><i class="bi bi-envelope me-2"></i>Messages</a>
+            </nav>
+        </div>
+        <div class="col-md-9 col-lg-10 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold">Manage Schemes</h2>
+                <a href="add-scheme.html" class="btn btn-primary"><i class="bi bi-plus-lg me-2"></i>Add New</a>
+            </div>
+            <div id="alertBox"></div>
+            <div class="card shadow-sm border-0 mb-3">
+                <div class="card-body">
+                    <div class="d-flex gap-2">
+                        <input type="text" id="searchInput" class="form-control" placeholder="Search by name or category...">
+                        <button class="btn btn-outline-primary" id="searchBtn">Search</button>
+                        <button class="btn btn-outline-secondary" id="clearBtn">Clear</button>
+                    </div>
+                </div>
+            </div>
+            <div class="card shadow-sm border-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="px-4 py-3">ID</th>
+                                <th>Scheme Name</th>
+                                <th>Category</th>
+                                <th>State</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="schemesTable"><tr><td colspan="6" class="text-center py-4"><div class="spinner-border text-primary"></div></td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../assets/js/app.js"></script>
+<script>
+checkAuth(function(user) {
+    if (!user || user.role !== 'admin') { window.location.href = '../login.html'; return; }
+    renderNavbar(user);
+    if (new URLSearchParams(window.location.search).get('success')) {
+        showAlert('alertBox', 'success', 'Operation completed successfully!');
+    }
+    loadSchemes();
+});
+
+function loadSchemes(search = '') {
+    fetch('../api.php?action=admin_schemes&search=' + encodeURIComponent(search))
+        .then(r => r.json())
+        .then(data => {
+            const tbody = document.getElementById('schemesTable');
+            if (!data.success || data.schemes.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4">No schemes found.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = data.schemes.map(s => `
+                <tr>
+                    <td class="px-4">${s.id}</td>
+                    <td class="fw-bold text-primary">${escHtml(s.scheme_name)}</td>
+                    <td><span class="badge bg-light text-dark border">${escHtml(s.category)}</span></td>
+                    <td>${escHtml(s.state)}</td>
+                    <td><span class="badge bg-${s.status === 'active' ? 'success' : 'danger'}">${s.status}</span></td>
+                    <td>
+                        <div class="btn-group">
+                            <a href="../scheme-details.html?id=${s.id}" class="btn btn-sm btn-outline-info" target="_blank"><i class="bi bi-eye"></i></a>
+                            <a href="edit-scheme.html?id=${s.id}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteScheme(${s.id})"><i class="bi bi-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>`).join('');
+        });
+}
+
+function deleteScheme(id) {
+    if (!confirm('Are you sure you want to deactivate this scheme?')) return;
+    const fd = new FormData();
+    fd.append('id', id);
+    fetch('../api.php?action=admin_delete_scheme', { method: 'POST', body: fd })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) { showAlert('alertBox', 'success', 'Scheme deactivated.'); loadSchemes(); }
+            else showAlert('alertBox', 'danger', data.message || 'Error.');
+        });
+}
+
+document.getElementById('searchBtn').addEventListener('click', () => loadSchemes(document.getElementById('searchInput').value));
+document.getElementById('clearBtn').addEventListener('click', () => { document.getElementById('searchInput').value = ''; loadSchemes(); });
+document.getElementById('searchInput').addEventListener('keypress', e => { if(e.key === 'Enter') loadSchemes(e.target.value); });
+</script>
+</body>
+</html>
+

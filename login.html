@@ -1,0 +1,209 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Government Welfare Portal</title>
+    <meta name="description" content="Login to your citizen account to access government welfare schemes.">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="assets/css/style.css" rel="stylesheet">
+    <style>
+        body { background: #f0f4f8; }
+        .login-card { border-radius: 16px; overflow: hidden; }
+        .card-header-custom {
+            background: linear-gradient(135deg, #1a3a6b 0%, #2563eb 100%);
+            padding: 2.5rem 2rem;
+            text-align: center;
+        }
+        .form-control, .form-select {
+            border-radius: 8px; border: 1.5px solid #d1d5db;
+            padding: .65rem .9rem; transition: all .2s;
+        }
+        .form-control:focus {
+            border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,.15);
+        }
+        .field-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #9ca3af; }
+        .input-with-icon { position: relative; }
+        .input-with-icon .form-control { padding-left: 2.5rem; }
+        .password-toggle { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #9ca3af; border: none; background: none; }
+        .btn-login { border-radius: 8px; padding: .75rem; font-weight: 600; font-size: 1rem; }
+        .divider { position: relative; text-align: center; margin: 1.5rem 0; }
+        .divider::before { content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: #e5e7eb; }
+        .divider span { position: relative; background: #fff; padding: 0 1rem; color: #9ca3af; font-size: .85rem; }
+        .info-box { background: #eff6ff; border-left: 4px solid #2563eb; border-radius: 0 8px 8px 0; padding: .75rem 1rem; margin-bottom: 1.5rem; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top shadow-sm" id="mainNavbar">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="index.html"><i class="bi bi-bank me-2"></i>Welfare Portal</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="schemes.html">Schemes</a></li>
+                <li class="nav-item"><a class="nav-link" href="index.html#about">About</a></li>
+                <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
+            </ul>
+            <ul class="navbar-nav" id="authNav"></ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5 col-lg-4">
+            <div class="card shadow-lg border-0 login-card">
+                <!-- Header -->
+                <div class="card-header-custom text-white">
+                    <div class="bg-white bg-opacity-25 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                         style="width:70px;height:70px;">
+                        <i class="bi bi-shield-lock fs-2 text-white"></i>
+                    </div>
+                    <h4 class="mb-0 fw-bold">Welcome Back</h4>
+                    <p class="mb-0 mt-1 opacity-75 small">Sign in to your citizen account</p>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+
+                    <!-- Pending search notice -->
+                    <div id="pendingNotice" style="display:none" class="info-box">
+                        <small><i class="bi bi-info-circle me-1"></i>Please login to search for schemes.</small>
+                    </div>
+
+                    <div id="alertBox"></div>
+
+                    <form id="loginForm" novalidate>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Email Address</label>
+                            <div class="input-with-icon">
+                                <i class="bi bi-envelope field-icon"></i>
+                                <input type="email" class="form-control" id="email" placeholder="your@email.com" required autocomplete="email">
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Password</label>
+                            <div class="input-with-icon position-relative">
+                                <i class="bi bi-lock field-icon"></i>
+                                <input type="password" class="form-control" id="password" placeholder="Enter your password" required autocomplete="current-password">
+                                <button type="button" class="password-toggle" onclick="togglePwd()">
+                                    <i class="bi bi-eye" id="eyeIcon"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="d-grid mb-3">
+                            <button type="submit" class="btn btn-primary btn-login" id="submitBtn">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="divider"><span>Don't have an account?</span></div>
+
+                    <div class="d-grid">
+                        <a href="register.html" class="btn btn-outline-primary btn-login">
+                            <i class="bi bi-person-plus me-2"></i>Create New Account
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin hint -->
+            <div class="text-center mt-3">
+                <small class="text-muted">
+                    <i class="bi bi-shield-fill-exclamation me-1"></i>
+                    Admin? <a href="admin/login.html" class="text-decoration-none">Admin Login →</a>
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="bg-dark text-light py-4 mt-auto">
+    <div class="container text-center">
+        <p class="mb-0 text-muted">&copy; <span id="year"></span> Government Welfare Portal. All rights reserved.</p>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+document.getElementById('year').textContent = new Date().getFullYear();
+
+// Show pending search notice
+if (sessionStorage.getItem('pendingSearch')) {
+    document.getElementById('pendingNotice').style.display = 'block';
+}
+
+// Redirect if already logged in
+checkAuth(function(user) {
+    if (user) {
+        window.location.href = user.role === 'admin' ? 'admin/dashboard.html' : 'index.html';
+        return;
+    }
+    renderNavbar(user);
+});
+
+function togglePwd() {
+    const inp = document.getElementById('password');
+    const icon = document.getElementById('eyeIcon');
+    if (inp.type === 'password') {
+        inp.type = 'text';
+        icon.className = 'bi bi-eye-slash';
+    } else {
+        inp.type = 'password';
+        icon.className = 'bi bi-eye';
+    }
+}
+
+document.getElementById('loginForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const email    = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const btn      = document.getElementById('submitBtn');
+
+    if (!email || !password) {
+        showAlert('alertBox', 'danger', 'Please enter both email and password.');
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Logging in...';
+
+    const fd = new FormData();
+    fd.append('email', email);
+    fd.append('password', password);
+
+    fetch('api.php?action=auth_login', { method: 'POST', body: fd })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                const pendingSearch = sessionStorage.getItem('pendingSearch');
+                if (pendingSearch) {
+                    sessionStorage.removeItem('pendingSearch');
+                    window.location.href = 'schemes.html?search=' + encodeURIComponent(pendingSearch);
+                } else if (data.role === 'admin') {
+                    window.location.href = 'admin/dashboard.html';
+                } else {
+                    // Citizens go to homepage (they can click "My Profile" if needed)
+                    window.location.href = 'index.html';
+                }
+            } else {
+                showAlert('alertBox', 'danger', data.message || 'Login failed. Please check your credentials.');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-box-arrow-in-right me-2"></i>Login';
+            }
+        })
+        .catch(() => {
+            showAlert('alertBox', 'danger', 'Network error. Please try again.');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-box-arrow-in-right me-2"></i>Login';
+        });
+});
+</script>
+</body>
+</html>

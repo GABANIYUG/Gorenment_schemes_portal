@@ -1,0 +1,412 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Government Welfare Portal</title>
+    <meta name="description" content="Create your citizen account on the Government Welfare Portal to access and apply for government schemes.">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="assets/css/style.css" rel="stylesheet">
+    <style>
+        body { background: #f0f4f8; }
+        .register-card { border-radius: 16px; overflow: hidden; }
+        .card-header-custom {
+            background: linear-gradient(135deg, #1a3a6b 0%, #2563eb 100%);
+            padding: 2rem;
+        }
+        .step-indicator { display: flex; gap: 8px; justify-content: center; margin-top: 1rem; }
+        .step-dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.4); transition: all .3s; }
+        .step-dot.active { background: #fff; transform: scale(1.3); }
+        .step-dot.done { background: #4ade80; }
+        .section-title {
+            font-size: .75rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 1.5px; color: #6b7280; margin-bottom: 1rem;
+            padding-bottom: .5rem; border-bottom: 2px solid #e5e7eb;
+        }
+        .form-control, .form-select {
+            border-radius: 8px; border: 1.5px solid #d1d5db;
+            padding: .6rem .9rem; transition: all .2s;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,.15);
+        }
+        .progress-bar-custom {
+            height: 4px; background: #e5e7eb; border-radius: 2px; margin-bottom: 1.5rem;
+        }
+        .progress-fill {
+            height: 100%; background: linear-gradient(90deg, #2563eb, #1d4ed8);
+            border-radius: 2px; transition: width .4s ease;
+        }
+        .btn-step { border-radius: 8px; padding: .65rem 1.5rem; font-weight: 600; }
+        .field-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #9ca3af; }
+        .input-with-icon { position: relative; }
+        .input-with-icon .form-control { padding-left: 2.5rem; }
+        .password-toggle { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #9ca3af; border: none; background: none; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top shadow-sm" id="mainNavbar">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="index.html"><i class="bi bi-bank me-2"></i>Welfare Portal</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="schemes.html">Schemes</a></li>
+                <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
+            </ul>
+            <ul class="navbar-nav" id="authNav"></ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-6">
+            <div class="card shadow-lg border-0 register-card">
+                <!-- Header -->
+                <div class="card-header-custom text-white">
+                    <div class="text-center">
+                        <i class="bi bi-person-badge fs-1 mb-2"></i>
+                        <h4 class="mb-0 fw-bold">Create Citizen Account</h4>
+                        <p class="mb-2 opacity-75 small">Register to access government welfare schemes</p>
+                    </div>
+                    <div class="step-indicator">
+                        <div class="step-dot active" id="dot1"></div>
+                        <div class="step-dot" id="dot2"></div>
+                        <div class="step-dot" id="dot3"></div>
+                    </div>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    <div id="alertBox"></div>
+
+                    <!-- Progress Bar -->
+                    <div class="progress-bar-custom">
+                        <div class="progress-fill" id="progressFill" style="width:33%"></div>
+                    </div>
+                    <p class="text-muted small mb-4" id="stepLabel">Step 1 of 3 — Account Details</p>
+
+                    <form id="registerForm" novalidate>
+
+                        <!-- ── STEP 1: Account Details ── -->
+                        <div id="step1">
+                            <p class="section-title"><i class="bi bi-shield-lock me-2"></i>Account Details</p>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Full Name <span class="text-danger">*</span></label>
+                                <div class="input-with-icon">
+                                    <i class="bi bi-person field-icon"></i>
+                                    <input type="text" class="form-control" id="name" placeholder="Enter your full name" required>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Email Address <span class="text-danger">*</span></label>
+                                <div class="input-with-icon">
+                                    <i class="bi bi-envelope field-icon"></i>
+                                    <input type="email" class="form-control" id="email" placeholder="your@email.com" required>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Phone Number <span class="text-danger">*</span></label>
+                                <div class="input-with-icon">
+                                    <i class="bi bi-phone field-icon"></i>
+                                    <input type="text" class="form-control" id="phone" placeholder="10-digit mobile number" maxlength="10" required>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Password <span class="text-danger">*</span></label>
+                                <div class="input-with-icon position-relative">
+                                    <i class="bi bi-lock field-icon"></i>
+                                    <input type="password" class="form-control" id="password" placeholder="At least 6 characters" required>
+                                    <button type="button" class="password-toggle" onclick="togglePwd('password','eyeIcon1')"><i class="bi bi-eye" id="eyeIcon1"></i></button>
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold">Confirm Password <span class="text-danger">*</span></label>
+                                <div class="input-with-icon position-relative">
+                                    <i class="bi bi-lock-fill field-icon"></i>
+                                    <input type="password" class="form-control" id="confirm_password" placeholder="Re-enter your password" required>
+                                    <button type="button" class="password-toggle" onclick="togglePwd('confirm_password','eyeIcon2')"><i class="bi bi-eye" id="eyeIcon2"></i></button>
+                                </div>
+                            </div>
+                            <div class="d-grid">
+                                <button type="button" class="btn btn-primary btn-step" onclick="goToStep(2)">Next <i class="bi bi-arrow-right ms-2"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- ── STEP 2: Personal Details ── -->
+                        <div id="step2" style="display:none">
+                            <p class="section-title"><i class="bi bi-person-lines-fill me-2"></i>Personal Details</p>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-semibold">Date of Birth</label>
+                                    <input type="date" class="form-control" id="dob" max="">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-semibold">Gender</label>
+                                    <select class="form-select" id="gender">
+                                        <option value="">Select Gender</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                        <option value="Other">Other / Prefer not to say</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Category / Caste</label>
+                                <select class="form-select" id="category">
+                                    <option value="">Select Category</option>
+                                    <option value="General">General</option>
+                                    <option value="OBC">OBC (Other Backward Class)</option>
+                                    <option value="SC">SC (Scheduled Caste)</option>
+                                    <option value="ST">ST (Scheduled Tribe)</option>
+                                    <option value="EWS">EWS (Economically Weaker Section)</option>
+                                </select>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-semibold">State</label>
+                                    <select class="form-select" id="state">
+                                        <option value="">Select State</option>
+                                        <option>Andhra Pradesh</option>
+                                        <option>Arunachal Pradesh</option>
+                                        <option>Assam</option>
+                                        <option>Bihar</option>
+                                        <option>Chhattisgarh</option>
+                                        <option>Goa</option>
+                                        <option>Gujarat</option>
+                                        <option>Haryana</option>
+                                        <option>Himachal Pradesh</option>
+                                        <option>Jharkhand</option>
+                                        <option>Karnataka</option>
+                                        <option>Kerala</option>
+                                        <option>Madhya Pradesh</option>
+                                        <option>Maharashtra</option>
+                                        <option>Manipur</option>
+                                        <option>Meghalaya</option>
+                                        <option>Mizoram</option>
+                                        <option>Nagaland</option>
+                                        <option>Odisha</option>
+                                        <option>Punjab</option>
+                                        <option>Rajasthan</option>
+                                        <option>Sikkim</option>
+                                        <option>Tamil Nadu</option>
+                                        <option>Telangana</option>
+                                        <option>Tripura</option>
+                                        <option>Uttar Pradesh</option>
+                                        <option>Uttarakhand</option>
+                                        <option>West Bengal</option>
+                                        <option>Delhi</option>
+                                        <option>Jammu &amp; Kashmir</option>
+                                        <option>Ladakh</option>
+                                        <option>Puducherry</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-semibold">District / City</label>
+                                    <input type="text" class="form-control" id="district" placeholder="e.g. Surat">
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between mt-3">
+                                <button type="button" class="btn btn-outline-secondary btn-step" onclick="goToStep(1)"><i class="bi bi-arrow-left me-2"></i>Back</button>
+                                <button type="button" class="btn btn-primary btn-step" onclick="goToStep(3)">Next <i class="bi bi-arrow-right ms-2"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- ── STEP 3: Socio-Economic Details ── -->
+                        <div id="step3" style="display:none">
+                            <p class="section-title"><i class="bi bi-bar-chart-line me-2"></i>Socio-Economic Details</p>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Occupation</label>
+                                <select class="form-select" id="occupation">
+                                    <option value="">Select Occupation</option>
+                                    <option>Farmer / Agricultural Worker</option>
+                                    <option>Government Employee</option>
+                                    <option>Private Employee</option>
+                                    <option>Self-Employed / Business</option>
+                                    <option>Daily Wage Worker</option>
+                                    <option>Student</option>
+                                    <option>Homemaker</option>
+                                    <option>Unemployed</option>
+                                    <option>Retired</option>
+                                    <option>Other</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Annual Family Income (₹)</label>
+                                <select class="form-select" id="annual_income">
+                                    <option value="">Select Income Range</option>
+                                    <option value="50000">Up to ₹50,000</option>
+                                    <option value="100000">₹50,001 – ₹1,00,000</option>
+                                    <option value="250000">₹1,00,001 – ₹2,50,000</option>
+                                    <option value="500000">₹2,50,001 – ₹5,00,000</option>
+                                    <option value="750000">₹5,00,001 – ₹7,50,000</option>
+                                    <option value="1000000">₹7,50,001 – ₹10,00,000</option>
+                                    <option value="1500000">Above ₹10,00,000</option>
+                                </select>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold">Highest Education</label>
+                                <select class="form-select" id="education">
+                                    <option value="">Select Education</option>
+                                    <option>No Formal Education</option>
+                                    <option>Primary (up to Class 5)</option>
+                                    <option>Middle (up to Class 8)</option>
+                                    <option>Secondary (Class 10 / SSC)</option>
+                                    <option>Higher Secondary (Class 12 / HSC)</option>
+                                    <option>Diploma / ITI</option>
+                                    <option>Graduate</option>
+                                    <option>Post Graduate</option>
+                                    <option>Doctorate / PhD</option>
+                                </select>
+                            </div>
+                            <p class="text-muted small mb-3"><i class="bi bi-info-circle me-1"></i>Steps 2 &amp; 3 are optional and can be updated later from your profile.</p>
+                            <div class="d-flex justify-content-between">
+                                <button type="button" class="btn btn-outline-secondary btn-step" onclick="goToStep(2)"><i class="bi bi-arrow-left me-2"></i>Back</button>
+                                <button type="submit" class="btn btn-success btn-step px-4" id="submitBtn">
+                                    <i class="bi bi-check2-circle me-2"></i>Create Account
+                                </button>
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+
+                <div class="card-footer text-center py-3 bg-light">
+                    Already have an account? <a href="login.html" class="text-primary fw-bold">Login here</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="bg-dark text-light py-4 mt-auto">
+    <div class="container text-center">
+        <p class="mb-0 text-muted">&copy; <span id="year"></span> Government Welfare Portal.</p>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+document.getElementById('year').textContent = new Date().getFullYear();
+
+// Set max DOB to today
+document.getElementById('dob').max = new Date().toISOString().split('T')[0];
+
+// Redirect if already logged in
+checkAuth(function(user) {
+    if (user) window.location.href = 'index.html';
+    renderNavbar(user);
+});
+
+function togglePwd(id, iconId) {
+    const inp = document.getElementById(id);
+    const icon = document.getElementById(iconId);
+    if (inp.type === 'password') {
+        inp.type = 'text';
+        icon.className = 'bi bi-eye-slash';
+    } else {
+        inp.type = 'password';
+        icon.className = 'bi bi-eye';
+    }
+}
+
+let currentStep = 1;
+
+function goToStep(step) {
+    // Validate step 1 before moving
+    if (step > 1 && currentStep === 1) {
+        const name = document.getElementById('name').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        const password = document.getElementById('password').value;
+        const confirm = document.getElementById('confirm_password').value;
+
+        if (!name) { showAlert('alertBox', 'danger', 'Full name is required.'); return; }
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showAlert('alertBox', 'danger', 'Please enter a valid email address.'); return; }
+        if (!/^[0-9]{10}$/.test(phone)) { showAlert('alertBox', 'danger', 'Phone must be exactly 10 digits.'); return; }
+        if (password.length < 6) { showAlert('alertBox', 'danger', 'Password must be at least 6 characters.'); return; }
+        if (password !== confirm) { showAlert('alertBox', 'danger', 'Passwords do not match.'); return; }
+        document.getElementById('alertBox').innerHTML = '';
+    }
+
+    // Hide all steps
+    document.getElementById('step1').style.display = 'none';
+    document.getElementById('step2').style.display = 'none';
+    document.getElementById('step3').style.display = 'none';
+
+    // Show current step
+    document.getElementById('step' + step).style.display = 'block';
+    currentStep = step;
+
+    // Update progress bar
+    const pct = [33, 66, 100][step - 1];
+    document.getElementById('progressFill').style.width = pct + '%';
+
+    // Update dots
+    for (let i = 1; i <= 3; i++) {
+        const dot = document.getElementById('dot' + i);
+        dot.className = 'step-dot' + (i === step ? ' active' : (i < step ? ' done' : ''));
+    }
+
+    // Update label
+    const labels = ['Step 1 of 3 — Account Details', 'Step 2 of 3 — Personal Details', 'Step 3 of 3 — Socio-Economic Details'];
+    document.getElementById('stepLabel').textContent = labels[step - 1];
+
+    // Scroll to top of card
+    document.querySelector('.register-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+document.getElementById('registerForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submitBtn');
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating account...';
+
+    const fd = new FormData();
+    fd.append('name',           document.getElementById('name').value.trim());
+    fd.append('email',          document.getElementById('email').value.trim());
+    fd.append('phone',          document.getElementById('phone').value.trim());
+    fd.append('password',       document.getElementById('password').value);
+    fd.append('dob',            document.getElementById('dob').value);
+    fd.append('gender',         document.getElementById('gender').value);
+    fd.append('category',       document.getElementById('category').value);
+    fd.append('state',          document.getElementById('state').value);
+    fd.append('district',       document.getElementById('district').value.trim());
+    fd.append('occupation',     document.getElementById('occupation').value);
+    fd.append('annual_income',  document.getElementById('annual_income').value);
+    fd.append('education',      document.getElementById('education').value);
+
+    fetch('api.php?action=auth_register', { method: 'POST', body: fd })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                // Redirect with success flag
+                const pendingSearch = sessionStorage.getItem('pendingSearch');
+                if (pendingSearch) {
+                    sessionStorage.removeItem('pendingSearch');
+                    window.location.href = 'schemes.html?search=' + encodeURIComponent(pendingSearch);
+                } else {
+                    window.location.href = 'citizen/profile.html?welcome=1';
+                }
+            } else {
+                showAlert('alertBox', 'danger', data.message || 'Registration failed. Please try again.');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-check2-circle me-2"></i>Create Account';
+            }
+        })
+        .catch(() => {
+            showAlert('alertBox', 'danger', 'Network error. Please try again.');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-check2-circle me-2"></i>Create Account';
+        });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+/* ─── Base ─────────────────────────────────────────────────────────────────── */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+}
+
+/* ─── Navbar ─────────────────────────────────────────────────────────────────── */
+#mainNavbar, .navbar { background: linear-gradient(90deg, #FF9933 0%, #138808 100%) !important; }
+
+/* ─── Hero ───────────────────────────────────────────────────────────────────── */
+.hero-section {
+    background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('../images/hero_banner.png') center/cover no-repeat;
+    color: white;
+    padding: 100px 0;
+    text-align: center;
+}
+
+/* ─── Scheme Cards ───────────────────────────────────────────────────────────── */
+.scheme-card {
+    transition: transform .28s ease, box-shadow .28s ease;
+    height: 100%;
+    border-radius: 10px;
+    overflow: hidden;
+    border: none;
+    box-shadow: 0 4px 6px rgba(0,0,0,.06);
+}
+.scheme-card:hover { transform: translateY(-5px); box-shadow: 0 12px 24px rgba(0,0,0,.12); }
+.scheme-card .card-img-top { height: 200px; object-fit: cover; background-color: #e9ecef; }
+.card-title { color: #002060; font-weight: 600; }
+.badge-category { background-color: #e3f2fd; color: #0d6efd; font-weight: 500; }
+
+/* ─── Custom Colors ──────────────────────────────────────────────────────────── */
+.bg-primary { background-color: #FF9933 !important; }
+.btn-primary { background-color: #FF9933; border-color: #FF9933; }
+.btn-primary:hover { background-color: #E68A00; border-color: #E68A00; }
+.text-primary { color: #FF9933 !important; }
+.btn-outline-primary { color: #FF9933; border-color: #FF9933; }
+.btn-outline-primary:hover { background-color: #FF9933; border-color: #FF9933; }
+
+/* ─── Forms ──────────────────────────────────────────────────────────────────── */
+.form-control:focus, .form-select:focus {
+    border-color: #002060;
+    box-shadow: 0 0 0 0.25rem rgba(0,32,96,.2);
+}
+
+/* ─── Admin Sidebar ──────────────────────────────────────────────────────────── */
+.admin-sidebar {
+    min-height: calc(100vh - 56px);
+    background-color: #1e2a3a;
+    padding-top: 20px;
+}
+.admin-sidebar a {
+    color: #adb5bd;
+    padding: 12px 20px;
+    display: block;
+    text-decoration: none;
+    transition: background .2s, color .2s;
+    border-left: 3px solid transparent;
+}
+.admin-sidebar a:hover, .admin-sidebar a.active {
+    background-color: rgba(255,255,255,.06);
+    color: #fff;
+    border-left-color: #0d6efd;
+}
+
+/* ─── Content Text ───────────────────────────────────────────────────────────── */
+.content-text { line-height: 1.85; color: #495057; }
+
+/* ─── Page Header ────────────────────────────────────────────────────────────── */
+.page-hero {
+    background: linear-gradient(135deg, #002060 0%, #0056b3 100%);
+    color: white;
+    padding: 50px 0;
+}
+
+/* ─── Stat Cards ─────────────────────────────────────────────────────────────── */
+.stat-card { border: none; border-radius: 12px; overflow: hidden; }
+.stat-card .display-5 { font-size: 2.5rem; }
