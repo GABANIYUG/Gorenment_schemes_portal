@@ -79,3 +79,34 @@ body {
 /* ─── Stat Cards ─────────────────────────────────────────────────────────────── */
 .stat-card { border: none; border-radius: 12px; overflow: hidden; }
 .stat-card .display-5 { font-size: 2.5rem; }
+
+/* ─── Footer ─────────────────────────────────────────────────────────────────── */
+footer {
+    background-color: #212529 !important;
+    color: #f8f9fa !important;
+}
+footer h4, footer h5, footer h6 {
+    color: #ffffff !important;
+}
+footer,
+footer p,
+footer span,
+footer li,
+footer .text-muted,
+footer p.text-muted,
+footer .text-white-50 {
+    color: #adb5bd !important;
+}
+footer a,
+footer a.text-muted,
+footer a.text-white-50 {
+    color: #adb5bd !important;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+footer a:hover,
+footer a.text-muted:hover,
+footer a.text-white-50:hover {
+    color: #ffffff !important;
+    text-decoration: underline;
+}
