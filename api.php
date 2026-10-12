@@ -165,9 +165,39 @@ elseif ($action === 'schemes_list') {
     $params = [];
 
     if (!empty($search)) {
-        $query .= " AND (scheme_name LIKE ? OR short_description LIKE ? OR description LIKE ? OR category LIKE ? OR keywords LIKE ?)";
-        $searchTerm = "%$search%";
-        $params = array_merge($params, [$searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm]);
+        $exactTerm = "%$search%";
+        $words = preg_split('/[\s,\-_]+/', $search, -1, PREG_SPLIT_NO_EMPTY);
+        
+        $fields = [
+            'scheme_name', 'short_description', 'description', 'category', 
+            'keywords', 'who_can_apply', 'eligibility', 'benefits',
+            "REPLACE(keywords, '-', ' ')", "REPLACE(scheme_name, '-', ' ')"
+        ];
+        $fieldSql = implode(' LIKE ? OR ', $fields) . ' LIKE ?';
+        $fieldCount = count($fields);
+
+        if (count($words) <= 1) {
+            $query .= " AND ($fieldSql)";
+            $params = array_merge($params, array_fill(0, $fieldCount, $exactTerm));
+        } else {
+            $wordConditions = [];
+            $wordParams = [];
+            foreach ($words as $w) {
+                if (mb_strlen($w) >= 2) {
+                    $wTerm = "%$w%";
+                    $wordConditions[] = "($fieldSql)";
+                    $wordParams = array_merge($wordParams, array_fill(0, $fieldCount, $wTerm));
+                }
+            }
+
+            if (!empty($wordConditions)) {
+                $query .= " AND (($fieldSql) OR (" . implode(" AND ", $wordConditions) . "))";
+                $params = array_merge($params, array_fill(0, $fieldCount, $exactTerm), $wordParams);
+            } else {
+                $query .= " AND ($fieldSql)";
+                $params = array_merge($params, array_fill(0, $fieldCount, $exactTerm));
+            }
+        }
     }
     if (!empty($category_filter)) {
         $query .= " AND category = ?";
@@ -185,7 +215,7 @@ elseif ($action === 'schemes_list') {
         $stmt->execute($params);
         $schemes = $stmt->fetchAll();
         
-        $cat_stmt = $pdo->query("SELECT DISTINCT category FROM schemes WHERE status = 'active' AND category IS NOT NULL");
+        $cat_stmt = $pdo->query("SELECT DISTINCT category FROM schemes WHERE status = 'active' AND category IS NOT NULL ORDER BY category ASC");
         $categories = $cat_stmt->fetchAll(PDO::FETCH_COLUMN);
         
         $state_stmt = $pdo->query("SELECT DISTINCT state FROM schemes WHERE status = 'active' AND state IS NOT NULL ORDER BY CASE WHEN state = 'All India' THEN 0 ELSE 1 END, state ASC");

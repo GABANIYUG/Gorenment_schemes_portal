@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -122,40 +122,59 @@
 document.getElementById('year').textContent = new Date().getFullYear();
 
 let currentSearch = getUrlParam('search');
-let currentCategory = '';
-let currentState = '';
+let currentCategory = getUrlParam('category');
+let currentState = getUrlParam('state');
 let currentUser = null;
+let searchDebounceTimer = null;
 
 checkAuth(function(user) {
     currentUser = user;
     renderNavbar(user);
 
-    // If search keyword in URL but not logged in
-    if (currentSearch && !user) {
-        sessionStorage.setItem('pendingSearch', currentSearch);
-        const modal = new bootstrap.Modal(document.getElementById('loginRequiredModal'));
-        modal.show();
-        currentSearch = '';
-        loadSchemes();
-        return;
-    }
-
     if (currentSearch) {
-        document.getElementById('searchLabel').textContent = 'Showing results for: "' + currentSearch + '"';
         document.getElementById('schemeSearchInput').value = currentSearch;
     }
+    updateSearchLabel();
     loadSchemes();
 });
 
+function updateSearchLabel(totalCount) {
+    const label = document.getElementById('searchLabel');
+    if (!label) return;
+    
+    let parts = [];
+    if (currentSearch) parts.push(`matching "<strong>${escHtml(currentSearch)}</strong>"`);
+    if (currentCategory) parts.push(`in <strong>${escHtml(currentCategory)}</strong>`);
+    if (currentState) parts.push(`for <strong>${escHtml(currentState)}</strong>`);
+
+    if (parts.length > 0) {
+        label.innerHTML = (typeof totalCount === 'number' ? `Showing ${totalCount} schemes ` : 'Showing results ') + parts.join(' ');
+    } else if (typeof totalCount === 'number') {
+        label.innerHTML = `Showing all ${totalCount} schemes`;
+    } else {
+        label.innerHTML = '';
+    }
+}
+
+function syncAndLoad() {
+    currentSearch = document.getElementById('schemeSearchInput').value.trim();
+    currentCategory = document.getElementById('categoryFilter').value;
+    currentState = document.getElementById('stateFilter').value;
+    updateSearchLabel();
+    loadSchemes();
+}
+
 document.getElementById('schemeSearchForm').addEventListener('submit', function(e) {
     e.preventDefault();
-    currentSearch = document.getElementById('schemeSearchInput').value.trim();
-    if (currentSearch) {
-        document.getElementById('searchLabel').textContent = 'Showing results for: "' + currentSearch + '"';
-    } else {
-        document.getElementById('searchLabel').textContent = '';
-    }
-    loadSchemes();
+    clearTimeout(searchDebounceTimer);
+    syncAndLoad();
+});
+
+document.getElementById('schemeSearchInput').addEventListener('input', function() {
+    clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(function() {
+        syncAndLoad();
+    }, 300);
 });
 
 function loadSchemes() {
@@ -171,16 +190,23 @@ function loadSchemes() {
         .then(r => r.json())
         .then(data => {
             if (data.success) {
-                // Populate filter dropdowns
+                // Populate dropdowns once
                 const catSelect = document.getElementById('categoryFilter');
                 const stateSelect = document.getElementById('stateFilter');
-                const currentCatVal = catSelect.value;
-                const currentStateVal = stateSelect.value;
 
-                catSelect.innerHTML = '<option value="">All Categories</option>' +
-                    data.filters.categories.map(c => `<option value="${escHtml(c)}" ${currentCategory === c ? 'selected' : ''}>${escHtml(c)}</option>`).join('');
-                stateSelect.innerHTML = '<option value="">All States</option>' +
-                    data.filters.states.map(s => `<option value="${escHtml(s)}" ${currentState === s ? 'selected' : ''}>${escHtml(s)}</option>`).join('');
+                if (catSelect.options.length <= 1 && data.filters && data.filters.categories) {
+                    catSelect.innerHTML = '<option value="">All Categories</option>' +
+                        data.filters.categories.map(c => `<option value="${escHtml(c)}">${escHtml(c)}</option>`).join('');
+                }
+                catSelect.value = currentCategory || '';
+
+                if (stateSelect.options.length <= 1 && data.filters && data.filters.states) {
+                    stateSelect.innerHTML = '<option value="">All States</option>' +
+                        data.filters.states.map(s => `<option value="${escHtml(s)}">${escHtml(s)}</option>`).join('');
+                }
+                stateSelect.value = currentState || '';
+
+                updateSearchLabel(data.schemes.length);
 
                 if (data.schemes.length > 0) {
                     grid.innerHTML = data.schemes.map(s => `
@@ -208,25 +234,22 @@ function loadSchemes() {
                     </div>`;
                 }
             }
+        })
+        .catch(err => {
+            grid.innerHTML = `<div class="col-12 text-center py-5 text-danger"><p>Failed to load schemes. Please refresh.</p></div>`;
         });
 }
 
 document.getElementById('applyFilters').addEventListener('click', function() {
-    currentCategory = document.getElementById('categoryFilter').value;
-    currentState = document.getElementById('stateFilter').value;
-    loadSchemes();
+    syncAndLoad();
 });
 
 document.getElementById('categoryFilter').addEventListener('change', function() {
-    currentCategory = this.value;
-    currentState = document.getElementById('stateFilter').value;
-    loadSchemes();
+    syncAndLoad();
 });
 
 document.getElementById('stateFilter').addEventListener('change', function() {
-    currentCategory = document.getElementById('categoryFilter').value;
-    currentState = this.value;
-    loadSchemes();
+    syncAndLoad();
 });
 
 document.getElementById('resetFilters').addEventListener('click', resetAll);
@@ -235,10 +258,10 @@ function resetAll() {
     currentSearch = '';
     currentCategory = '';
     currentState = '';
-    document.getElementById('searchLabel').textContent = '';
     document.getElementById('schemeSearchInput').value = '';
     document.getElementById('categoryFilter').value = '';
     document.getElementById('stateFilter').value = '';
+    updateSearchLabel();
     loadSchemes();
 }
 </script>

@@ -1,5 +1,61 @@
+CREATE DATABASE IF NOT EXISTS `government_welfare_portal`;
+USE `government_welfare_portal`;
+
+SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS `search_history`;
+DROP TABLE IF EXISTS `contact_messages`;
+DROP TABLE IF EXISTS `citizen_profiles`;
+DROP TABLE IF EXISTS `schemes`;
+DROP TABLE IF EXISTS `users`;
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- --------------------------------------------------------
+-- Table structure for table `users`
+
+CREATE TABLE `users` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `phone` varchar(15) NOT NULL,
+  `role` enum('citizen','admin') NOT NULL DEFAULT 'citizen',
+  `status` enum('active','inactive') NOT NULL DEFAULT 'active',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO `users` (`id`, `name`, `email`, `password`, `phone`, `role`, `status`) VALUES
+(1, 'Admin User', 'admin@welfare.gov', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '9999999999', 'admin', 'active'),
+(2, 'John Doe', 'john@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '9876543210', 'citizen', 'active'),
+(3, 'yug', 'yuggabani29@gmail.com', '$2y$10$onuj6d7x7V1F79qKx5fyTuVduJQgCxErWpfszhKRPaoym2UIVBF5K', '1234567891', 'citizen', 'active');
+
+-- --------------------------------------------------------
+-- Table structure for table `citizen_profiles`
+
+CREATE TABLE `citizen_profiles` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `dob` date DEFAULT NULL,
+  `gender` enum('Male','Female','Other') DEFAULT NULL,
+  `state` varchar(50) DEFAULT NULL,
+  `district` varchar(50) DEFAULT NULL,
+  `category` varchar(50) DEFAULT NULL,
+  `occupation` varchar(100) DEFAULT NULL,
+  `annual_income` decimal(15,2) DEFAULT NULL,
+  `education` varchar(100) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_user_id` (`user_id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `fk_user_profile` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 INSERT INTO `citizen_profiles` (`user_id`,`dob`,`gender`,`state`,`district`,`category`,`occupation`,`annual_income`,`education`) VALUES
-(2,'2000-05-15','Male','Gujarat','Surat','General','Private Employee',300000.00,'Graduate');
+(2,'2000-05-15','Male','Gujarat','Surat','General','Private Employee',300000.00,'Graduate'),
+(3,'2005-07-21','Male','Gujarat','Surat','General','Student',NULL,'Graduate');
 
 -- --------------------------------------------------------
 -- Table structure for table `schemes`
@@ -52,7 +108,7 @@ INSERT INTO `schemes` (`scheme_name`,`category`,`state`,`keywords`,`short_descri
 ('Sukanya Samriddhi Yojana (SSY)','Women & Child Welfare','All India','sukanya, girl child, savings, beti bachao, ss yojana','Small-savings account scheme designed for the future of a girl child.','Sukanya Samriddhi Yojana is a government small-savings scheme for a girl child, intended to encourage long-term savings for education and future needs.','Parents or legal guardians of an eligible girl child who meets the account-opening conditions.','The girl child must be an eligible resident Indian; the account is generally opened before she reaches age 10, with account limits and operating conditions prescribed by the scheme.','Government-notified interest on the account, tax benefits subject to applicable law and maturity/withdrawal rules under the scheme.','Girl child''s birth certificate; parent/guardian identity and address proof; photographs; other KYC documents required by the bank/post office.','Open the account through an authorised bank branch or post office and submit the account-opening form and KYC documents.','https://www.indiapost.gov.in/','assets/images/schemes/sukanya.jpg','active'),
 ('Pradhan Mantri Ujjwala Yojana (PMUY)','Energy & Household Welfare','All India','ujjwala, lpg, women, clean cooking, pmuy','Supports eligible women from poor households with LPG connections.','PMUY promotes clean cooking by supporting eligible households, with the connection issued in the name of an eligible adult woman subject to the current scheme criteria and LPG distributor process.','Eligible adult women from deprived/poor households meeting PMUY eligibility conditions and without an existing LPG connection in the household.','Eligibility and documentation depend on the prevailing PMUY criteria and household records; one LPG connection is permitted per eligible household as per rules.','Support towards a deposit-free LPG connection and applicable assistance/subsidy components under the current PMUY framework.','Aadhaar/identity proof; address proof; ration/family composition details; bank account details; KYC and other LPG distributor requirements.','Apply through the PMUY portal or an authorised LPG distributor. Select the appropriate LPG connection and submit KYC documents.','https://www.pmuy.gov.in/','assets/images/schemes/pmuy.jpg','active'),
 ('Pradhan Mantri Awas Yojana - Urban (PMAY-U) 2.0','Housing','All India','pmay urban, housing, ews, lig, mig, urban housing','Housing assistance framework for eligible urban households.','PMAY-U 2.0 supports eligible urban households through its notified verticals to provide pucca housing and improve housing access for economically weaker and other eligible groups in statutory towns and notified urban areas.','Eligible urban households falling within the notified EWS/LIG/MIG and other beneficiary categories under PMAY-U 2.0.','Eligibility includes income category, absence of an existing pucca house in the country and other mission conditions. Current city/ULB coverage and vertical-specific rules apply.','Central and state assistance/subsidy under the applicable PMAY-U 2.0 vertical, with the quantum determined by the state/UT and component.','Aadhaar; income proof/self-certificate; identity/residence proof; bank details; housing/property documents; category/minority documents if applicable.','Register through the official PMAY-U 2.0 portal and complete the eligibility check and beneficiary survey for the applicable vertical.','https://pmay-urban.gov.in/','assets/images/schemes/pmay-urban.jpg','active'),
-('Pradhan Mantri Awaas Yojana - Gramin (PMAY-G)','Housing','All India','pmay gramin, rural housing, housing assistance, village','Rural housing assistance for eligible households without adequate housing.','PMAY-G aims to provide pucca houses with basic amenities to eligible rural households identified under the prescribed beneficiary-selection and verification process.','Eligible rural households included through the PMAY-G beneficiary-selection process and satisfying current programme conditions.','Eligibility is determined through the prescribed rural housing deprivation/priority data and verification by local authorities.','Financial assistance for construction of a pucca house along with convergence with basic-amenity programmes where applicable.','Aadhaar/identity proof; beneficiary and household details; bank/post-office account details; land/house-site documents where required.','Beneficiaries are generally identified through the programme''s prescribed process and may be assisted by the Gram Panchayat/block administration for verification and implementation.','https://pmayg.nic.in/','assets/images/schemes/pmay-gramin.jpg','active'),
+('Pradhan Mantri Awaas Yojana - Gramin (PMAY-G)','Housing','All India','pmay gramin, awas, pm awas, rural housing, housing assistance, village','Rural housing assistance for eligible households without adequate housing.','PMAY-G aims to provide pucca houses with basic amenities to eligible rural households identified under the prescribed beneficiary-selection and verification process.','Eligible rural households included through the PMAY-G beneficiary-selection process and satisfying current programme conditions.','Eligibility is determined through the prescribed rural housing deprivation/priority data and verification by local authorities.','Financial assistance for construction of a pucca house along with convergence with basic-amenity programmes where applicable.','Aadhaar/identity proof; beneficiary and household details; bank/post-office account details; land/house-site documents where required.','Beneficiaries are generally identified through the programme''s prescribed process and may be assisted by the Gram Panchayat/block administration for verification and implementation.','https://pmayg.nic.in/','assets/images/schemes/pmay-gramin.jpg','active'),
 ('Mahatma Gandhi National Rural Employment Guarantee Scheme (MGNREGA)','Employment & Livelihood','All India','mgnrega, rural employment, wage employment, job card','Provides a legal guarantee of rural wage employment for eligible households.','MGNREGA provides a legal guarantee of wage employment for rural households willing to do unskilled manual work, while creating durable community and rural assets through approved works.','Rural households whose adult members are willing to do unskilled manual work and who are eligible to be registered under the Act.','Registration is undertaken through the Gram Panchayat and job cards are issued to eligible rural households according to the Act and local verification.','Up to the statutory employment entitlement under the Act when demanded and subject to programme conditions, with wages paid according to notified state wage rates.','Household details; identity proof; photographs; address/residence information; other Gram Panchayat records as required.','Contact the Gram Panchayat, submit a household registration request and obtain a job card. Work can then be demanded through the local process.','https://nrega.nic.in/','assets/images/schemes/mgnrega.jpg','active'),
 ('Indira Gandhi National Old Age Pension Scheme (IGNOAPS)','Social Welfare','All India','old age pension, nsap, bpl, senior citizen','Social-security pension support for eligible older persons from poor households.','IGNOAPS is a component of the National Social Assistance Programme (NSAP) providing social-security pension support to eligible older persons from poor households, with state governments adding/implementing benefits as applicable.','Older persons from eligible poor/BPL households meeting the current NSAP and state conditions.','Age threshold, BPL/poverty criteria and state top-up/implementation rules must be checked for the applicant''s state.','Monthly social-security pension support; exact combined amount can vary by central and state contribution.','Age proof; Aadhaar/identity proof; BPL/poverty evidence where required; bank/post-office account; residence and other local documents.','Apply through the prescribed state/UT/local social-welfare or panchayat/municipal process for NSAP pensions.','https://nsap.nic.in/','assets/images/schemes/ignoaps.jpg','active'),
 ('Indira Gandhi National Widow Pension Scheme (IGNWPS)','Social Welfare','All India','widow pension, nsap, women welfare, pension','Social-security pension support for eligible widows from poor households.','IGNWPS is an NSAP component supporting eligible widows from poor households. States/UTs implement the pension and may provide additional benefits under their own rules.','Widows meeting the current central and state eligibility requirements, including the prescribed age and poverty/BPL conditions where applicable.','Age, BPL/poverty status and other conditions depend on the applicable central scheme and state implementation rules.','Monthly pension support, with the final benefit potentially including a state contribution/top-up.','Death certificate of spouse; age proof; identity/residence proof; BPL/poverty evidence where required; bank account details.','Apply through the state/UT social-welfare or local panchayat/municipal authority under the NSAP pension process.','https://nsap.nic.in/','assets/images/schemes/ignwps.jpg','active'),
